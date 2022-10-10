@@ -63,8 +63,8 @@ class Agent:
             game.checkpoint.x < r.x,  # food left
             game.checkpoint.y > r.y  # food down
         ]
-        print(type(state))
-        print(state)
+        #print(type(state))
+        #print(state)
         return np.array(state, dtype=int) # converts bool to int array
 
 
@@ -137,7 +137,7 @@ def train():
                 record = score
                 agent.model.save()
             
-            print('Game:', agent.n_games, 'Score:', score, 'Record:', record)
+            print('Game:', agent.n_games, ', Score:', score, ', Record:', record)
 
             # plot
             plot_scores.append(score)

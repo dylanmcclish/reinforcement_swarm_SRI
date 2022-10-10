@@ -9,12 +9,11 @@ class Checkpoint:
         self.x, self.y = x, y
         self.screen = screen
         self.color = (0,255,0)
-        self.rect = pygame.draw.rect(self.screen, self.color, (0,0,self.width,self.height))
+        self.draw()
 
-        # integrate position randomizer with main 
 
 
     def draw(self):
-        self.robot = pygame.draw.rect(self.screen, self.color, (self.x,self.y,self.width,self.height))
+        self.rect = pygame.draw.rect(self.screen, self.color, (self.x,self.y,self.width,self.height))
     
         

@@ -1,3 +1,4 @@
+from gettext import dpgettext
 import pygame, random
 import obstacle, robot, checkpoint
 from enum import Enum
@@ -22,7 +23,7 @@ BLUE1 = (0, 0, 255)
 BLUE2 = (0, 100, 255)
 BLACK = (0,0,0)
 
-SPEED = 40
+SPEED = 1000
 
 
 class swarmAI:
@@ -47,11 +48,13 @@ class swarmAI:
     def reset(self):
         # robots
         self.robot1 = robot.Robot(self.screen, 30, 30)
-        self.robots = [self.robot1] # for future swarm
+        self.robots = [self.robot1]
+        self.r_rects = [self.robot1.rect]
 
         # obstacles (- rewards)
         self.obstacle1 = obstacle.Obstacle(75,75, random.random() * 300 + 100, random.random() * 300 + 100, self.screen)
         self.obstacles = [self.obstacle1]
+        self.o_rects = [self.obstacle1.rect]
 
         # checkpoints (+ rewards)
         self.add_reward()
@@ -61,23 +64,33 @@ class swarmAI:
         self.frame_iteration = 0
 
     def add_reward(self):
-            self.checkpoint = checkpoint.Checkpoint(self.screen, random.random() * 300 + 100, random.random() * 300 + 100)   # ensures that position is within frame
+            new_x, new_y = random.random() * 300 + 100, random.random() * 300 + 100
+            new_check = pygame.Rect(new_x,new_y,40,40)
             # prevent overlap between checkpoint and obstacles
-            collision = False
+            # while any(self.checkpoint.rect.colliderect(t) for t in self.o_rects):
+            #     self.checkpoint = checkpoint.Checkpoint(self.screen, random.random() * 300 + 100, random.random() * 300 + 100)   # ensures that position is within frame
+            if new_check.collidelist(self.o_rects) != -1 or new_check.collidelist(self.r_rects) != -1:
+                self.add_reward()
+            
+            # draws after confirms rect is valid
+            self.checkpoint = checkpoint.Checkpoint(self.screen, new_x, new_y)   # ensures that position is within frame
+
+            
             # for o in self.obstacles:
-            #     if pygame.Rect.colliderect(self.checkpoint.rect,o.rect):
-            #         collision = True
-            #         break
-            # self.add_reward()     - CAUSES INFINITE LOOP
-            for o in self.obstacles:
-                if o.rect.bottom > self.checkpoint.rect.bottom:
-                    overlap = o.rect.bottom - self.checkpoint.rect.bottom
-                    o.rect.bottom -= overlap
-                if o.rect.top > self.checkpoint.rect.top:
-                    overlap = o.rect.top - self.checkpoint.rect.top
-                    o.rect.top += overlap 
+            #     if o.rect.bottom > self.checkpoint.rect.bottom:
+            #         overlap = o.rect.bottom - self.checkpoint.rect.bottom
+            #         o.rect.bottom -= overlap
+            #     if o.rect.top > self.checkpoint.rect.top:
+            #         overlap = o.rect.top - self.checkpoint.rect.top
+            #         o.rect.top += overlap 
     
     def play_step(self, action):
+        # update arrays for is_reward and is_collision - BAD CODE
+        self.robots = [self.robot1]
+        self.r_rects = [self.robot1.rect]
+        self.obstacles = [self.obstacle1]
+        self.o_rects = [self.obstacle1.rect]
+
         self.frame_iteration += 1
         # CHANGE TO RUN A SINGLE EPISODE - LOOP IN MAIN 
         # MAIN WILL HAVE TRAINING OF AGENT???? - DEPENDS ON SNAKE
@@ -119,7 +132,7 @@ class swarmAI:
         for robot in self.robots:
             if pt is None:  # used to end game
                 # walls
-                if robot.rect.left < 0 or robot.rect.right > self.screen_width or robot.rect.top <= 0 or robot.rect.bottom >= self.screen_height:
+                if robot.rect.left <= 0 or robot.rect.right >= self.screen_width or robot.rect.top <= 0 or robot.rect.bottom >= self.screen_height:
                     return True
                 # obstacles
                 for o in self.obstacles:
@@ -156,10 +169,9 @@ class swarmAI:
 
     def is_reward(self):
         # test collision w/ reward rect
-        for robot in self.robots:
-            if pygame.Rect.colliderect(robot.rect,self.checkpoint.rect):
-                return True
-
+        if self.checkpoint.rect.collidelist(self.r_rects) != -1:
+            print("rewarded")
+            return True
         return False
 
 
