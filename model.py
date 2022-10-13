@@ -14,7 +14,7 @@ class Linear_QNet(nn.Module):
         
     def forward(self, x):
         x = F.relu(self.linear1(x)) # relu activiation func
-        x = self.linear2(x) 
+        x = self.linear2(x) # relu activiation func
         return x
     
     def save(self, file_name='model.pth'):
@@ -32,6 +32,7 @@ class QTrainer:
         self.gamma = gamma
         self.optimizer = optim.Adam(model.parameters(), lr=self.lr)
         self.criterion = nn.MSELoss()
+        
 
     def train_step(self, state, action, reward, next_state, done):
         state = torch.tensor(state, dtype=torch.float)
@@ -49,7 +50,7 @@ class QTrainer:
             done = (done, )
 
         # BELLMAN
-        # 1: predicted Q values w/ curent state
+        # 1: predicted Q values w/ current state
         pred = self.model(state) # returns 4 vals (4 actions)
 
         target = pred.clone()  # returns copy of pred
@@ -65,7 +66,6 @@ class QTrainer:
         self.optimizer.zero_grad()
         loss = self.criterion(target, pred)
         loss.backward() # back propagation
-
         self.optimizer.step()
 
             

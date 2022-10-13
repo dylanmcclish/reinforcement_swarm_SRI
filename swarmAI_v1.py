@@ -40,8 +40,8 @@ class swarmAI:
      
         # init game state
         self.direction = Direction.RIGHT
-        self.vel = 2
-        
+        self.vel = 10
+        self.collision_type = ""
         self.reset()
 
 
@@ -69,9 +69,29 @@ class swarmAI:
             # prevent overlap between checkpoint and obstacles
             # while any(self.checkpoint.rect.colliderect(t) for t in self.o_rects):
             #     self.checkpoint = checkpoint.Checkpoint(self.screen, random.random() * 300 + 100, random.random() * 300 + 100)   # ensures that position is within frame
-            if new_check.collidelist(self.o_rects) != -1 or new_check.collidelist(self.r_rects) != -1:
-                self.add_reward()
+            # if new_check.collidelist(self.o_rects) != -1 or new_check.collidelist(self.r_rects) != -1:
+            #     self.add_reward()
+
+            for o in self.obstacles:
+                if (new_check.colliderect(o)):
+                    if new_check.bottom > o.rect.top:
+                        overlap = new_check.bottom - o.rect.top
+                        new_check.bottom -= overlap
+                    if new_check.top < o.rect.bottom:
+                        overlap = o.rect.bottom - new_check.top
+                        new_check.top += overlap
+                    if new_check.right > o.rect.left:
+                        overlap = new_check.right - o.rect.left
+                        new_check.right -= overlap
+                    if new_check.left < o.rect.right:
+                        overlap = o.rect.right - new_check.left
+                        new_check.left += overlap
+
+
+
             
+
+
             # draws after confirms rect is valid
             self.checkpoint = checkpoint.Checkpoint(self.screen, new_x, new_y)   # ensures that position is within frame
 
@@ -106,17 +126,26 @@ class swarmAI:
         self.move(action)
 
         # 3. check if game over
-        reward = 0
+        reward = -2
         game_over = False
-        if self.is_collision():
+        multiplier = 1
+        if (self.score>0):
+            multiplier = self.score
+        if self.is_collision() or self.frame_iteration > 1000 * (multiplier):
             game_over = True
             reward = -10
+            if self.frame_iteration > 1000 * (multiplier):
+                reward = -50
+                print("TIME ELAPSED")
+            elif self.collision_type == "wall":
+                reward = -30
+            
             return reward, game_over, self.score
 
         # 4. check reward - place more if reached
         if self.is_reward():
             self.score +=1
-            reward = 10
+            reward = 30
             self.add_reward()
 
 
@@ -133,6 +162,7 @@ class swarmAI:
             if pt is None:  # used to end game
                 # walls
                 if robot.rect.left <= 0 or robot.rect.right >= self.screen_width or robot.rect.top <= 0 or robot.rect.bottom >= self.screen_height:
+                    self.collision_type = "wall"
                     return True
                 # obstacles
                 for o in self.obstacles:
@@ -144,16 +174,12 @@ class swarmAI:
                         return True
             else: # used for danger states
                 # walls
-                if pt.x > self.screen_width - 20 or pt.x < 0 or pt.y > self.screen_height - 20 or pt.y < 0:
+                if pt.x > self.screen_width or pt.x < 0 or pt.y > self.screen_height - 20 or pt.y < 0:
                     return True
                 # obstacles
                 for o in self.obstacles:
-                    if pt.x == robot.x: # danger y
-                        if abs(pt.y - o.y) < 20:    # arbitrary threshold
-                            return True
-                    if pt.y == robot.y: # danger x
-                        if abs(pt.x - o.x) < 20:
-                            return True
+                    if abs(pt.y - o.y) < 20 and abs(pt.x - o.x):    # arbitrary threshold
+                        return True
                 # other robots
                 for o_robot in self.robots: # swarm collision
                     if robot != o_robot:
@@ -191,16 +217,14 @@ class swarmAI:
         # [forward, right, left, backward]
         
         if np.array_equal(action, [1,0,0,0]):
-            new_dir = Direction.UP
+            self.direction = Direction.UP
         elif np.array_equal(action, [0,1,0,0]):
-            new_dir = Direction.RIGHT
+            self.direction = Direction.RIGHT
         elif np.array_equal(action, [0,0,1,0]):
-            new_dir = Direction.LEFT
-        else:
-            new_dir = Direction.DOWN
-        
+            self.direction = Direction.LEFT
+        elif np.array_equal(action, [0,0,0,1]):
+            self.direction = Direction.DOWN
 
-        self.direction = new_dir
         
         if self.direction == Direction.RIGHT:
             self.robot1.x += self.vel

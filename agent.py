@@ -26,10 +26,10 @@ class Agent:
         # dir front, dir right, dir left, dir back, 
         # reward front, reward right, reward left, reward back]
         r = game.robot1
-        point_l = Point(r.x - 20, r.y)
-        point_r = Point(r.x + 20, r.y)
-        point_u = Point(r.x, r.y - 20)
-        point_d = Point(r.x, r.y + 20)
+        point_l = Point(r.x - 50, r.y)
+        point_r = Point(r.x + 50, r.y)
+        point_u = Point(r.x, r.y - 50)
+        point_d = Point(r.x, r.y + 50)
         
         dir_l = game.direction == Direction.LEFT
         dir_r = game.direction == Direction.RIGHT
@@ -63,7 +63,6 @@ class Agent:
             game.checkpoint.x < r.x,  # food left
             game.checkpoint.y > r.y  # food down
         ]
-        #print(type(state))
         #print(state)
         return np.array(state, dtype=int) # converts bool to int array
 
@@ -74,12 +73,14 @@ class Agent:
 
     def train_long_memory(self):
         if len(self.memory) > BATCH_SIZE:
+            print("training LONG")
             mini_sample = random.sample(self.memory, BATCH_SIZE) # list of tuples
         else: 
             mini_sample = self.memory
 
         states, actions, rewards, next_states, dones = zip(*mini_sample)
         self.trainer.train_step(states, actions, rewards, next_states, dones)
+        #self.memory = deque(maxlen=MAX_MEMORY)
 
     def train_short_memory(self, state, action, reward, next_state, done):
         self.trainer.train_step(state, action, reward, next_state, done)
@@ -88,9 +89,10 @@ class Agent:
     def get_action(self, state):
         # random moves: tradeoff exploration / exploitation
         # does more random moves in beginning
-        self.epsilon = 80 - self.n_games
+        # self.epsilon = 400 - self.n_games       # highered amount of games until epsilon = 0 
+        self.epsilon = 500 - self.n_games   # constant epsilon
         final_move = [0,0,0,0]
-        if random.randint(0,200) < self.epsilon:
+        if random.randint(0,5000) < self.epsilon:
             move = random.randint(0, 3)
             final_move[move] = 1
         else:
@@ -137,7 +139,7 @@ def train():
                 record = score
                 agent.model.save()
             
-            print('Game:', agent.n_games, ', Score:', score, ', Record:', record)
+            #print('Game:', agent.n_games, ', Score:', score, ', Record:', record)
 
             # plot
             plot_scores.append(score)
