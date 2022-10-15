@@ -5,6 +5,8 @@ from collections import deque
 from swarmAI_v1 import swarmAI, Direction, Point
 from model import Linear_QNet, QTrainer
 from helper import plot
+import helper
+from helper import graph
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
@@ -26,10 +28,10 @@ class Agent:
         # dir front, dir right, dir left, dir back, 
         # reward front, reward right, reward left, reward back]
         r = game.robot1
-        point_l = Point(r.x - 50, r.y)
-        point_r = Point(r.x + 50, r.y)
-        point_u = Point(r.x, r.y - 50)
-        point_d = Point(r.x, r.y + 50)
+        point_l = Point(r.x - 20, r.y)
+        point_r = Point(r.x + 20, r.y)
+        point_u = Point(r.x, r.y - 20)
+        point_d = Point(r.x, r.y + 20)
         
         dir_l = game.direction == Direction.LEFT
         dir_r = game.direction == Direction.RIGHT
@@ -73,7 +75,7 @@ class Agent:
 
     def train_long_memory(self):
         if len(self.memory) > BATCH_SIZE:
-            print("training LONG")
+            #print("training LONG")
             mini_sample = random.sample(self.memory, BATCH_SIZE) # list of tuples
         else: 
             mini_sample = self.memory
@@ -90,9 +92,11 @@ class Agent:
         # random moves: tradeoff exploration / exploitation
         # does more random moves in beginning
         # self.epsilon = 400 - self.n_games       # highered amount of games until epsilon = 0 
-        self.epsilon = 500 - self.n_games   # constant epsilon
+        self.epsilon = 110 - self.n_games   # constant epsilon
+        if self.epsilon < 10:
+            self.epsilon = 10   # min epsilon
         final_move = [0,0,0,0]
-        if random.randint(0,5000) < self.epsilon:
+        if random.randint(0,1000) < self.epsilon:
             move = random.randint(0, 3)
             final_move[move] = 1
         else:
@@ -108,11 +112,12 @@ class Agent:
 def train():
     plot_scores = []
     plot_mean_scores = []
+    avg_time_and_score = [] # 2D array 
     total_score = 0
     record = 0
     agent = Agent()
     game = swarmAI()
-    while True:
+    while agent.n_games<=5:
         # get old state
         state_old = agent.get_state(game)
 
@@ -120,7 +125,8 @@ def train():
         final_move = agent.get_action(state_old)
         
         # perform move and get new state
-        reward, done, score = game.play_step(final_move)
+
+        reward, done, score, times = game.play_step(final_move)
         state_new = agent.get_state(game)
 
         # train short memory
@@ -132,6 +138,7 @@ def train():
         if done:
             # train long memory (experience replay) - plot results
             game.reset()
+            trial_text = 'Trial ' + str(agent.n_games)
             agent.n_games += 1
             agent.train_long_memory()
 
@@ -139,7 +146,14 @@ def train():
                 record = score
                 agent.model.save()
             
-            #print('Game:', agent.n_games, ', Score:', score, ', Record:', record)
+            if times:
+                avg_time = sum(times)/score
+                avg_time_and_score.append([trial_text, avg_time, score])
+            else:
+                avg_time_and_score.append([trial_text, 0,0])
+
+            print(avg_time_and_score)
+            print('Game:', agent.n_games, ', Score:', score, ', Record:', record)
 
             # plot
             plot_scores.append(score)
@@ -147,6 +161,10 @@ def train():
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
             plot(plot_scores, plot_mean_scores)
+    graph(avg_time_and_score)
+    print("DONE")
+
+
 
 
 
