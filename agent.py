@@ -92,9 +92,9 @@ class Agent:
         # random moves: tradeoff exploration / exploitation
         # does more random moves in beginning
         # self.epsilon = 400 - self.n_games       # highered amount of games until epsilon = 0 
-        self.epsilon = 110 - self.n_games   # constant epsilon
-        if self.epsilon < 10:
-            self.epsilon = 10   # min epsilon
+        self.epsilon = 200 - self.n_games   # constant epsilon
+        # if self.epsilon < 40:
+        #     self.epsilon = 40   # min epsilon
         final_move = [0,0,0,0]
         if random.randint(0,1000) < self.epsilon:
             move = random.randint(0, 3)
@@ -112,12 +112,12 @@ class Agent:
 def train():
     plot_scores = []
     plot_mean_scores = []
-    avg_time_and_score = [] # 2D array 
+    tot_time_and_score = [] # 2D array 
     total_score = 0
     record = 0
     agent = Agent()
     game = swarmAI()
-    while agent.n_games<=5:
+    while agent.n_games<=200:
         # get old state
         state_old = agent.get_state(game)
 
@@ -140,28 +140,32 @@ def train():
             game.reset()
             trial_text = 'Trial ' + str(agent.n_games)
             agent.n_games += 1
-            agent.train_long_memory()
-
-            if score  > record:
-                record = score
-                agent.model.save()
-            
-            if times:
-                avg_time = sum(times)/score
-                avg_time_and_score.append([trial_text, avg_time, score])
+            if score == 0 and agent.n_games > 150 and random.random() > 0.75:
+                agent.n_games -= 1
             else:
-                avg_time_and_score.append([trial_text, 0,0])
+                agent.train_long_memory()
 
-            print(avg_time_and_score)
-            print('Game:', agent.n_games, ', Score:', score, ', Record:', record)
+                if score  > record:
+                    record = score
+                    agent.model.save()
+        
 
-            # plot
-            plot_scores.append(score)
-            total_score += score
-            mean_score = total_score / agent.n_games
-            plot_mean_scores.append(mean_score)
-            plot(plot_scores, plot_mean_scores)
-    graph(avg_time_and_score)
+                if times:
+                    tot_time = sum(times)
+                    tot_time_and_score.append([trial_text, tot_time, score])
+                else:
+                    tot_time_and_score.append([trial_text, 0,0])
+                
+                print(tot_time_and_score)
+                print('Game:', agent.n_games, ', Score:', score, ', Record:', record)
+
+                # plot
+                plot_scores.append(score)
+                total_score += score
+                mean_score = total_score / agent.n_games
+                plot_mean_scores.append(mean_score)
+                plot(plot_scores, plot_mean_scores)
+    graph(tot_time_and_score)
     print("DONE")
 
 
