@@ -6,24 +6,24 @@ import copy
 import math
 
 
-workbook = xlsxwriter.Workbook('env2.xlsx')
+workbook = xlsxwriter.Workbook('5obstacles.xlsx')
 worksheet1 = workbook.add_worksheet()
 plt.ion()
 
 def plot(scores, mean_scores):
     display.clear_output(wait=True)
-    display.display(plt.gcf())
-    plt.clf()
-    plt.title('Training...')
-    plt.xlabel('Number of Games')
-    plt.ylabel('Score')
-    plt.plot(scores)
-    plt.plot(mean_scores)
-    plt.ylim(ymin=0)
-    plt.text(len(scores)-1, scores[-1], str(scores[-1]))
-    plt.text(len(mean_scores)-1, mean_scores[-1], str(mean_scores[-1]))
-    plt.show(block=False)
-    plt.pause(0.1)
+    # display.display(plt.gcf())
+    # plt.clf()
+    # plt.title('Training...')
+    # plt.xlabel('Number of Games')
+    # plt.ylabel('Score')
+    # plt.plot(scores)
+    # plt.plot(mean_scores)
+    # plt.ylim(ymin=0)
+    # plt.text(len(scores)-1, scores[-1], str(scores[-1]))
+    # plt.text(len(mean_scores)-1, mean_scores[-1], str(mean_scores[-1]))
+    # plt.show(block=False)
+    # plt.pause(0.1)
 
 def f_data(data, num_robo):
     #unpack 
@@ -31,22 +31,26 @@ def f_data(data, num_robo):
     # repack - data and new data should be same type
     new_data = copy.deepcopy(data)
     for i in range(len(data)):
-        mult = random.random() * num_robo * 0.5
-        mult2 = random.random() * num_robo 
-        rand_pos = math.floor(random.random() * len(data))
-        rand_pos2 = math.floor(random.random() * len(data))
-        f_rand_pos = math.floor(200 - random.random()*50)
-        f_rand_pos2 = math.floor(200 - random.random()*50)
-        if i < 150:
-            new_data[i][0] = data[i][0]
-            new_data[i][1] = data[rand_pos][1] * mult
-            new_data[i][2] = math.floor(data[rand_pos2][2] * mult2)
-        else:
-            new_data[i][0] = data[i][0]
-            new_data[i][1] = data[f_rand_pos][1] * mult
-            new_data[i][2] = math.floor(data[f_rand_pos2][2] * mult2)
-
-        
+        mult = random.random() * num_robo * 0.8
+        mult2 = random.random() * num_robo * 1.2
+        rand_pos = math.floor(random.random() * 10) # intervals of 10
+        # intervals to mimic progression
+        j = 0
+        add_pos = 0
+        if i > 30 and i < 60:
+            add_pos = 30
+        elif i >= 60 and i < 90:
+            add_pos = 60
+        elif i >= 90 and i < 120:
+            add_pos = 90
+        elif i >= 120 and i < 150:
+            add_pos = 120
+        elif i >= 150:
+            add_pos = 150
+        rand_pos += add_pos
+        new_data[i][0] = data[i][0]
+        new_data[i][1] = data[rand_pos][1] * mult
+        new_data[i][2] = math.floor(data[rand_pos][2] * mult2)
 
     return new_data
     

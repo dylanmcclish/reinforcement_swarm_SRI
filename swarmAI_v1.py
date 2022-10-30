@@ -25,7 +25,7 @@ BLUE1 = (0, 0, 255)
 BLUE2 = (0, 100, 255)
 BLACK = (0,0,0)
 
-SPEED = 5000
+SPEED = 10000
 
 
 class swarmAI:
@@ -51,13 +51,28 @@ class swarmAI:
         # robots
         
         self.robot1 = robot.Robot(self.screen, 20, 20)
+        self.f_robot1 = robot.Robot(self.screen, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50)
+        self.f_robot2 = robot.Robot(self.screen, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50)
+        self.f_robot3 = robot.Robot(self.screen, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50)
+        self.f_robot4 = robot.Robot(self.screen, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50)
+        self.f_robot5 = robot.Robot(self.screen, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50)
+        self.f_robot6 = robot.Robot(self.screen, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50)
+        self.f_robot7 = robot.Robot(self.screen, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50)
+        self.f_robot8 = robot.Robot(self.screen, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50)
+        self.f_robot9 = robot.Robot(self.screen, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50)
+
+
         self.robots = [self.robot1]
         self.r_rects = [self.robot1.rect]
 
         # obstacles (- rewards)
         self.obstacle1 = obstacle.Obstacle(60,60, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50, self.screen)
-        self.obstacles = [self.obstacle1]
-        self.o_rects = [self.obstacle1.rect]
+        self.obstacle2 = obstacle.Obstacle(60,60, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50, self.screen)
+        self.obstacle3 = obstacle.Obstacle(60,60, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50, self.screen)
+        # self.obstacle4 = obstacle.Obstacle(60,60, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50, self.screen)
+        # self.obstacle5 = obstacle.Obstacle(60,60, random.random() * (self.screen_width - 100) + 50, random.random() * (self.screen_height - 100) + 50, self.screen)
+        self.obstacles = [self.obstacle1,self.obstacle2,self.obstacle3]
+        self.o_rects = [self.obstacle1.rect,self.obstacle2.rect,self.obstacle3.rect]
 
         # checkpoints (+ rewards)
         self.add_reward()
@@ -116,8 +131,7 @@ class swarmAI:
         # update arrays for is_reward and is_collision - BAD CODE
         self.robots = [self.robot1]
         self.r_rects = [self.robot1.rect]
-        self.obstacles = [self.obstacle1]
-        self.o_rects = [self.obstacle1.rect]
+        
         self.frame_iteration += 1
         self.time_elapsed = 0 # only graph time_elapsed if greater than 0 
 
@@ -212,9 +226,18 @@ class swarmAI:
 
     def update_ui(self):
         self.screen.fill(BLACK)
-
+        self.f_robot1.draw()
+        self.f_robot2.draw()
+        self.f_robot3.draw()
+        self.f_robot4.draw()
+        self.f_robot5.draw()
+        self.f_robot6.draw()
+        self.f_robot7.draw()
+        self.f_robot8.draw()
+        self.f_robot9.draw()
         for robot in self.robots:
             robot.draw()
+            
         for obstacle in self.obstacles:
             obstacle.draw()
         self.checkpoint.draw()

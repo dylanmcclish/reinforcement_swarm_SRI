@@ -140,7 +140,7 @@ def train():
             game.reset()
             trial_text = 'Trial ' + str(agent.n_games)
             agent.n_games += 1
-            if score == 0 and agent.n_games > 150 and random.random() > 0.75:
+            if score == 0 and agent.n_games > 150 and random.random() > 0.6:
                 agent.n_games -= 1
             else:
                 agent.train_long_memory()
